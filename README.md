@@ -190,6 +190,7 @@ We tested model robustness by injecting four types of noise into test articles.
 For a deeper understanding of the project methodology, experimental results, and detailed analysis, please refer to the full project summary available in the [`paper/`](paper) directory.
 
 ## 📁 Repository Structure
+```text
 Hybrid-Machine-Learning-and-Ensemble-Approaches-for-Fake-News-Detection/
 ├── figures/                       # Visualizations and performance plots
 │   ├── architecture_pipeline.png
