@@ -1,327 +1,249 @@
-# Hybrid-Deep-Learning-and-Ensemble-Approaches-for-Fake-News-Detection
+# Hybrid Machine Learning and Ensemble Approaches for Fake News Detection
+
 An explainable fake news detection framework using hybrid feature engineering, stacking ensemble learning, and SHAP analysis. The system combines Logistic Regression, XGBoost, and LightGBM to achieve reliable and high-accuracy text classification on a cleaned and carefully evaluated news dataset.
 
-## Project Overview
+---
 
-Fake news has become one of the biggest challenges in the digital world. Social media platforms allow false information to spread very quickly, influencing public opinion, politics, healthcare awareness, and financial decisions. Because of this, automatic fake news detection has become an important research area in Machine Learning and Natural Language Processing (NLP).
+## 📌 Project Overview
 
-This project presents a robust and explainable fake news detection framework using hybrid feature engineering, ensemble learning, and SHAP explainability techniques.
+Fake news has become one of the major challenges of the digital era. Social media platforms allow misinformation to spread rapidly, influencing public opinion, political events, financial decisions, and healthcare awareness. Automatic fake news detection systems have therefore become an important research area in Natural Language Processing (NLP) and Machine Learning.
 
-The main goal of this project is not only to achieve high accuracy, but also to ensure fair and trustworthy model evaluation.
+Several existing research works report extremely high accuracy values for fake news detection. However, many of these studies fail to investigate hidden data quality problems present inside benchmark datasets. Duplicate articles and overlapping samples can cause machine learning models to memorize patterns instead of learning meaningful representations.
+
+This project presents a critical reassessment and enhancement of fake news detection using a robust and explainable machine learning framework.
 
 ---
 
-# Problem Statement
+## 🔍 Key Discovery: Data Leakage in the Benchmark Dataset
 
-Many existing fake news detection studies report extremely high accuracy values. However, during this research, hidden issues were discovered inside the benchmark dataset used by many previous works.
+During dataset analysis, we discovered a serious methodological flaw in the widely used Kaggle Fake and Real News dataset:
 
-The analysis identified:
+| Metric | Value |
+|--------|-------|
+| Original articles | 44,898 |
+| Duplicate articles found | **6,333 (14.1%)** |
+| Clean unique articles | 38,565 |
+| Train-test overlap removed | 1,664 |
 
-- 6,252 duplicate articles
-- 1,664 train-test overlaps
+When duplicates exist, the same article can appear in **both training and test sets**. This is called **data leakage** – the model memorizes answers instead of learning patterns. The original paper by Alotaibi et al. (2026) reported 99.13% accuracy, but this number was artificially inflated due to this leakage.
 
-These problems can cause machine learning models to memorize articles instead of learning meaningful patterns, leading to inflated performance results.
+![Leakage Analysis](figures/leakage_analysis.png)
 
-This project addresses these issues by building a clean and reliable fake news detection pipeline.
-
----
-
-# Proposed Framework
-
-The proposed framework follows a complete machine learning pipeline:
-
-1. Data Cleaning and Deduplication  
-2. Feature Engineering  
-3. Base Model Training  
-4. Stacking Ensemble Learning  
-5. SHAP Explainability Analysis  
-
-The framework combines multiple feature extraction techniques and machine learning models to improve both performance and reliability.
+*Figure: Dataset analysis showing duplicate articles and cleaned dataset size*
 
 ---
 
-# Proposed Architecture
+## 🏗️ System Architecture
 
-![Architecture](figures/architecture_pipeline.png)
+The proposed system follows a four-stage pipeline:
 
-**Figure:** Proposed stacking ensemble architecture for fake news detection.
+![Architecture Pipeline](figures/architecture_pipeline.png)
 
-The architecture begins with dataset preprocessing, where duplicate articles and overlapping samples are removed. Multiple features are then extracted from the news articles, including word n-grams, character n-grams, and handcrafted meta-features.
+*Figure: Proposed leakage-free stacking ensemble pipeline for explainable fake news detection*
 
-These features are provided to three machine learning models:
+### Stage 1: Data Preprocessing
+- Lowercasing all text
+- Removing URLs and punctuation
+- Removing duplicate articles (6,333 removed)
+- Stratified 80/20 split with zero train-test overlap
 
+### Stage 2: Feature Engineering (Three Parallel Branches)
+
+| Feature Type | Description | Number of Features |
+|--------------|-------------|-------------------|
+| **Word N-grams** | Unigrams + bigrams with TF-IDF | 3,000 |
+| **Character N-grams** | 3-5 character sequences with TF-IDF | 2,000 |
+| **Meta-features** | Handcrafted stylometric features | 7 |
+
+**Meta-features extracted:**
+- Article length (characters)
+- Word count
+- Capital letter ratio (fake news often uses ALL CAPS)
+- Exclamation count (sensationalism indicator)
+- Question mark count (rhetorical style)
+- Average word length
+- Punctuation count
+
+All features are combined into a single 5,007-dimensional feature vector.
+
+### Stage 3: Stacking Ensemble
+
+**Layer 1 - Base Models:**
 - Logistic Regression
 - XGBoost
 - LightGBM
 
-The prediction probabilities generated by these models are combined using a stacking ensemble architecture with Logistic Regression as the meta-learner.
+**Layer 2 - Meta Learner:**
+- Logistic Regression (combines the three probability outputs)
 
-Finally, SHAP explainability analysis is used to understand how different features influence the prediction of fake or real news.
+Each base model outputs a probability score. These 3 probabilities become the input features for the meta learner, which makes the final decision.
 
----
+### Stage 4: Explainability with SHAP
 
-# Dataset Information
-
-The experiments were performed using the Kaggle Fake and Real News dataset.
-
-### Dataset Files
-- `Fake.csv`
-- `True.csv`
-
-### Original Dataset Size
-- 44,898 articles
-
-### After Cleaning
-- 38,585 unique articles
-
-### Data Cleaning Process
-The preprocessing pipeline included:
-
-- lowercase conversion
-- punctuation removal
-- URL removal
-- duplicate detection
-- overlap verification
-- train-test splitting
-
-The final cleaned dataset ensured that no article from the training set appeared inside the testing set.
+SHAP (SHapley Additive exPlanations) is integrated to explain:
+- **Global importance** – which features matter most overall
+- **Local explanations** – why a specific article was classified as fake or real
 
 ---
 
-# Feature Engineering
+## 📊 Results
 
-Three categories of features were extracted from the news articles.
+### Model Performance on Clean Test Set (7,713 articles)
 
-## 1. Word n-grams
-TF-IDF vectorization was applied using:
-- unigrams
-- bigrams
+| Model | Accuracy |
+|-------|----------|
+| Original Paper (Alotaibi et al., with leakage) | 99.13% |
+| Logistic Regression | 99.51% |
+| XGBoost | 99.64% |
+| LightGBM | 99.64% |
+| **Stacking Ensemble (Ours)** | **99.66%** |
+| DistilBERT (fine-tuned) | 99.71% |
 
-These features help capture vocabulary and phrase-level information.
+Our stacking ensemble achieves **99.66% accuracy** on a clean, leakage-free dataset – honestly outperforming the original paper's inflated result.
 
----
+![Model Comparison](figures/model_accuracy_comparison.png)
 
-## 2. Character n-grams
-Character sequences of length 3–5 were extracted to capture:
-- writing style
-- punctuation usage
-- capitalization patterns
+*Figure: Accuracy comparison among all models*
 
----
+### Confusion Matrix
 
-## 3. Meta-features
-Several handcrafted statistical features were computed, including:
-
-- article length
-- word count
-- capital letter ratio
-- exclamation count
-- question mark count
-- punctuation count
-- average word length
-
----
-
-# Machine Learning Models
-
-Three machine learning models were used as base learners:
-
-- Logistic Regression
-- XGBoost
-- LightGBM
-
-These models were combined using a stacking ensemble architecture.
-
-The final prediction was generated using a Logistic Regression meta-learner trained on the outputs of all base models.
-
----
-
-# Model Performance
-
-![Model Comparison](figures/model_comparison.png)
-
-**Figure:** Accuracy comparison of different machine learning models.
-
-| Model | Accuracy (%) |
-|---|---|
-| Logistic Regression | 99.51 |
-| XGBoost | 99.64 |
-| LightGBM | 99.64 |
-| Stacking Ensemble | 99.66 |
-| Baseline Deep Learning Framework | 99.13 |
-
-The proposed stacking ensemble achieved the best overall performance while maintaining reliable and fair evaluation standards.
-
----
-
-# Confusion Matrix
+Only **26 misclassifications** out of 7,713 test articles.
 
 ![Confusion Matrix](figures/stacking_confusion_matrix.png)
 
-**Figure:** Confusion matrix of the proposed stacking ensemble model.
-
-The confusion matrix shows that the model correctly classified the majority of fake and true news articles with very few misclassifications.
+*Figure: Confusion matrix of the stacking ensemble model*
 
 ---
 
-# Explainability with SHAP
+## 🔬 Explainability with SHAP
 
-One important contribution of this project is the integration of explainable AI using SHAP (SHapley Additive exPlanations).
+### Global Feature Importance
 
-SHAP helps explain:
-- why a news article is classified as fake or real
-- which features contribute most to predictions
-- how individual predictions are generated
+The SHAP summary plot shows the most influential features across the entire dataset. Character n-grams capturing punctuation patterns and meta-features like exclamation count are top contributors.
 
----
+![SHAP Summary Plot](figures/shap_summary_plot.png)
 
-## SHAP Summary Plot
+*Figure: SHAP summary plot showing global feature importance*
 
-![SHAP Summary](figures/shap_summary_plot.png)
+### Local Explanation (Single Prediction)
 
-**Figure:** Global feature importance using SHAP analysis.
+The waterfall plot shows how each feature contributed to a specific prediction – red bars push toward "fake", blue bars push toward "real".
 
-The SHAP summary plot highlights the most influential features affecting fake news classification.
+![SHAP Waterfall Plot](figures/shap_waterfall_plot.png)
 
----
+*Figure: SHAP waterfall explanation for a single prediction*
 
-# Key Contributions
+### ROC-AUC
 
-- Identified hidden duplicate articles and overlap issues in the dataset
-- Developed a reliable preprocessing and cleaning pipeline
-- Implemented hybrid feature engineering
-- Built a stacking ensemble framework
-- Achieved 99.66% accuracy on the cleaned dataset
-- Integrated SHAP explainability for transparent prediction analysis
-- Improved reliability and trustworthiness of fake news detection systems
+The stacking ensemble achieved a near-perfect ROC-AUC of **0.9997**, indicating excellent separation between fake and real news classes.
 
 ---
 
-# Repository Structure
+## 🌍 Cross-Dataset Generalisation (LIAR Dataset)
 
-```text
-Hybrid-Deep-Learning-and-Ensemble-Approaches-for-Fake-News-Detection/
-│
-├── notebooks/
-│   ├── 01_data_cleaning.ipynb
-│   ├── 02_feature_engineering.ipynb
-│   ├── 03_model_training.ipynb
-│   ├── 04_stacking_ensemble.ipynb
-│   └── 05_shap_analysis.ipynb
+To test how well the model generalizes to different types of text, we evaluated on the LIAR dataset (short political statements from PolitiFact).
+
+| Model | Kaggle Accuracy | LIAR Accuracy |
+|-------|-----------------|---------------|
+| Stacking Ensemble | 99.66% | ~60% |
+| DistilBERT (LIAR only) | 55.09% | 60.46% |
+| DistilBERT (combined training) | 99.71% | 62.43% |
+
+The drop from 99% to 60% on LIAR is an **honest and important finding** – it shows that the Kaggle dataset has very obvious stylistic patterns, and real-world fake news detection is much harder. This is reported as a limitation and motivates future work.
+
+---
+
+## 🛡️ Robustness Test (Noise Injection)
+
+We tested model robustness by injecting four types of noise into test articles.
+
+| Noise Level | Typo | Punctuation | Case | Word Drop |
+|-------------|------|-------------|------|-----------|
+| 0% | 99.4% | 99.0% | 99.6% | 99.4% |
+| 5% | 89.2% | 88.0% | 99.6% | 97.8% |
+| 10% | 82.0% | 76.2% | 99.6% | 95.0% |
+| 15% | 73.6% | 63.6% | 99.6% | 94.0% |
+| 20% | 63.6% | 60.6% | 99.6% | 92.8% |
+
+### Key Findings:
+- **Case changes** have almost no effect (99.6% at 20% noise) – due to lowercasing in preprocessing
+- **Word drops** are handled well (92.8% at 20% noise)
+- **Typos** significantly degrade performance (82% at 10% noise) – character-level features are sensitive
+- **Punctuation changes** also cause degradation (76% at 10% noise) – punctuation counts are used as meta-features
+
+---
+
+## 📈 Complete Results Summary
+
+| Model / Method | Accuracy | ROC-AUC | Notes |
+|----------------|----------|---------|-------|
+| Original Paper (Alotaibi et al.) | 99.13% | — | With data leakage |
+| Logistic Regression | 99.51% | — | Clean data |
+| XGBoost | 99.64% | — | Clean data |
+| LightGBM | 99.64% | — | Clean data |
+| **Stacking Ensemble (Ours)** | **99.66%** | **0.9997** | **Clean data – BEST** |
+| DistilBERT (Kaggle) | 99.71% | — | Heavy transformer |
+| DistilBERT (LIAR) | 60.46% | — | Cross-domain drop |
+
+---
+
+For a deeper understanding of the project methodology, experimental results, and detailed analysis, please refer to the full project summary available in the [`paper/`](paper) directory.
+
+## 📁 Repository Structure
+Hybrid-Machine-Learning-and-Ensemble-Approaches-for-Fake-News-Detection/
 │
 ├── figures/
-│   ├── architecture_pipeline.png
-│   ├── leakage_analysis.png
-│   ├── model_comparison.png
-│   ├── stacking_confusion_matrix.png
-│   ├── shap_summary_plot.png
-│   └── shap_waterfall_plot.png
+│ ├── architecture_pipeline.png
+│ ├── leakage_analysis.png
+│ ├── model_accuracy_comparison.png
+│ ├── stacking_confusion_matrix.png
+│ ├── shap_summary_plot.png
+│ ├── shap_waterfall_plot.png
+│ ├── roc_curve.png
+│ └── robustness_test.png
+│
+├── notebooks/
+│ ├── 01_data_cleaning.ipynb
+│ ├── 02_feature_engineering.ipynb
+│ ├── 03_model_training.ipynb
+│ ├── 04_stacking_ensemble.ipynb
+│ └── 05_shap_analysis.ipynb
 │
 ├── models/
-│   ├── model_lr.pkl
-│   ├── model_xgb.pkl
-│   ├── model_lgbm.pkl
-│   └── meta_model.pkl
+│ ├── model_lr.pkl
+│ ├── model_xgb.pkl
+│ ├── model_lgbm.pkl
+│ └── meta_model.pkl
 │
 ├── paper/
-│   ├── research_paper.pdf
-│   └── research_paper.docx
+│ ├── research_paper.pdf
+│ └── research_paper.docx
 │
 ├── README.md
 ├── requirements.txt
 └── LICENSE
-```
+
 
 ---
 
-# Methodology
-
-The methodology consists of the following stages:
-
-## Step 1 — Data Cleaning
-- text preprocessing
-- duplicate removal
-- overlap verification
-
-## Step 2 — Feature Engineering
-- word n-grams
-- character n-grams
-- meta-features
-
-## Step 3 — Model Training
-- Logistic Regression
-- XGBoost
-- LightGBM
-
-## Step 4 — Stacking Ensemble
-Combining prediction probabilities using a meta-learner.
-
-## Step 5 — SHAP Explainability
-Interpreting feature importance and prediction behavior.
-
----
-
-# Installation
-
-Clone the repository:
+## 🚀 Installation
 
 ```bash
-git clone https://github.com/yourusername/Hybrid-Deep-Learning-and-Ensemble-Approaches-for-Fake-News-Detection.git
-cd Hybrid-Deep-Learning-and-Ensemble-Approaches-for-Fake-News-Detection
-```
+# Clone the repository
+git clone https://github.com/utkarshkumarug21-byte/Hybrid-Machine-Learning-and-Ensemble-Approaches-for-Fake-News-Detection.git
+cd Hybrid-Machine-Learning-and-Ensemble-Approaches-for-Fake-News-Detection
 
-Install required libraries:
-
-```bash
+# Install required libraries
 pip install -r requirements.txt
-```
 
----
-
-# Running the Project
-
-Execute the notebooks in the following order:
-
-1. `01_data_cleaning.ipynb`
-2. `02_feature_engineering.ipynb`
-3. `03_model_training.ipynb`
-4. `04_stacking_ensemble.ipynb`
-5. `05_shap_analysis.ipynb`
-
-Each notebook represents one stage of the research workflow.
-
----
-
-# Research Paper
-
-The complete research paper is available in the `paper/` directory in both PDF and DOCX formats.
-
----
-
-# Future Work
-
-Possible future improvements include:
-
-- Transformer-based models (BERT, RoBERTa)
-- Multilingual fake news detection
-- Multimodal fake news analysis
-- Real-time deployment systems
-- Social media propagation analysis
-
----
-
-# Citation
+## 📚 Citation
 
 If you use this work in your research, please cite:
 
-```text
-Your Name,
-"Hybrid Deep Learning and Ensemble Approaches for Fake News Detection",
-2025.
-```
-
----
-
-# License
-
-This project is licensed under the Apache License 2.0.
+```bibtex
+@software{kumar2026hybrid,
+  author = {Utkarsh Kumar},
+  title = {Hybrid Machine Learning and Ensemble Approaches for Fake News Detection},
+  year = {2026},
+  url = {https://github.com/utkarshkumarug21-byte/Hybrid-Machine-Learning-and-Ensemble-Approaches-for-Fake-News-Detection}
+}
