@@ -218,7 +218,7 @@ Hybrid-Machine-Learning-and-Ensemble-Approaches-for-Fake-News-Detection/
 ├── README.md                      # Project documentation
 ├── requirements.txt               # Python dependencies
 └── LICENSE                        # Project license
-'''text
+```
 
 ---
 
