@@ -191,8 +191,7 @@ For a deeper understanding of the project methodology, experimental results, and
 
 ## 📁 Repository Structure
 Hybrid-Machine-Learning-and-Ensemble-Approaches-for-Fake-News-Detection/
-│
-├── figures/                # Visualizations and performance plots
+├── figures/                       # Visualizations and performance plots
 │   ├── architecture_pipeline.png
 │   ├── leakage_analysis.png
 │   ├── model_accuracy_comparison.png
@@ -201,28 +200,23 @@ Hybrid-Machine-Learning-and-Ensemble-Approaches-for-Fake-News-Detection/
 │   ├── shap_waterfall_plot.png
 │   ├── roc_curve.png
 │   └── robustness_test.png
-│
-├── notebooks/              # Step-by-step implementation
+├── notebooks/                     # Step-by-step implementation
 │   ├── 01_data_cleaning.ipynb
 │   ├── 02_feature_engineering.ipynb
 │   ├── 03_model_training.ipynb
 │   ├── 04_stacking_ensemble.ipynb
 │   └── 05_shap_analysis.ipynb
-│
-├── models/                 # Serialized trained model files (.pkl)
-│   ├── model_lr.pkl        # Logistic Regression (Base Model)
-│   ├── model_xgb.pkl       # XGBoost (Base Model)
-│   ├── model_lgbm.pkl      # LightGBM (Base Model)
-│   └── meta_model.pkl      # Final Stacking Meta-Classifier
-│
-├── paper/                  # Research documentation
+├── models/                        # Serialized trained model files (.pkl)
+│   ├── model_lr.pkl               # Logistic Regression (Base Model)
+│   ├── model_xgb.pkl              # XGBoost (Base Model)
+│   ├── model_lgbm.pkl             # LightGBM (Base Model)
+│   └── meta_model.pkl             # Final Stacking Meta-Classifier
+├── paper/                         # Research documentation
 │   ├── research_paper.pdf
 │   └── research_paper.docx
-│
-├── README.md               # Project documentation
-├── requirements.txt        # Python dependencies
-└── LICENSE                 # Project license
-
+├── README.md                      # Project documentation
+├── requirements.txt               # Python dependencies
+└── LICENSE                        # Project license
 
 ---
 
